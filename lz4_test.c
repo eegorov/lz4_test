@@ -33,15 +33,24 @@ const char buf[BUF_SIZE] = "[General]\nlang=ru_RU\nDefault%20template=/var/tmp/G
 "\n"
 ;
 
+char * compressed_buf;
+char * work_mem;
+char * decompressed_buf;
 
 static int __init init_lz4_test(void)
 {
 	int ret;
 	size_t out_len;
 	size_t compressed_len;
-	char * compressed_buf = vmalloc(OUT_BUF_SIZE);
-	char * work_mem = vmalloc(LZ4_MEM_COMPRESS);
-	char * decompressed_buf = vmalloc(BUF_SIZE);
+	compressed_buf = vmalloc(OUT_BUF_SIZE);
+	work_mem = vmalloc(LZ4_MEM_COMPRESS);
+	decompressed_buf = vmalloc(BUF_SIZE);
+
+	if(!(compressed_buf && work_mem && decompressed_buf )) 
+	{
+		printk(KERN_INFO "TEST_LZ4: Unable to allocate memory!\n");
+		return -ENOMEM;
+	}
 
 	printk(KERN_INFO "TEST LZ4: Hello!\n");
 	print_hex_dump(KERN_INFO, "TEST LZ4 INBUF:", DUMP_PREFIX_NONE,
@@ -79,6 +88,9 @@ static int __init init_lz4_test(void)
 
 static void __exit exit_lz4_test(void)
 {
+	vfree(compressed_buf);
+	vfree(work_mem);
+	vfree(decompressed_buf);
 	printk(KERN_INFO "TEST_LZ4: Bye!");
 }
 
