@@ -7,7 +7,7 @@
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Egor Y. Egorov");
-MODULE_DESCRIPTION("Module to test new LZ4 inplementation");
+MODULE_DESCRIPTION("Module to test new LZ4 implementation");
 MODULE_VERSION("1.0");
 
 
