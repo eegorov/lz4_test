@@ -68,7 +68,8 @@ static int __init init_lz4_test(void)
 	ret = LZ4_compress_default(buf, compressed_buf, BUF_SIZE, out_buf_max_size, work_mem);
 	out_len = ret;
 #else
-	ret = lz4_compress(buf, BUF_SIZE, compressed_buf, out_buf_max_size, &out_len, work_mem);
+	out_len = out_buf_max_size;
+	ret = lz4_compress(buf, BUF_SIZE, compressed_buf, &out_len, work_mem);
 #endif
 	printk(KERN_INFO "TEST_LZ4: LZ4_compress returned %d\n", ret);
 	
