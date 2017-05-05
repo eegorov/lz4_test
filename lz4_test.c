@@ -12,7 +12,7 @@ MODULE_VERSION("1.0");
 
 
 #define BUF_SIZE 573
-#define OUT_BUF_SIZE LZ4_COMPRESSBOUND(BUF_SIZE)
+//#define OUT_BUF_SIZE LZ4_COMPRESSBOUND(BUF_SIZE)
 
 const char buf[BUF_SIZE] = "[General]\nlang=ru_RU\nDefault%20template=/var/tmp/GuitarPro6/Data/Templates/Steel Guitar.gpt\nDefault%20style=:/styles/Classic Style.gps\n\n[RSE]\nMultiThreading=true\nenabled=true"
 "[Dialogs]\n"
@@ -42,7 +42,15 @@ static int __init init_lz4_test(void)
 	int ret;
 	size_t out_len;
 	size_t compressed_len;
-	compressed_buf = vmalloc(OUT_BUF_SIZE);
+	size_t out_buf_max_size;
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
+	out_buf_max_size = LZ4_compressBound(BUF_SIZE);
+#else
+        out_buf_max_size = lz4_compressbound(BUF_SIZE);
+#endif
+
+	compressed_buf = vmalloc(out_buf_max_size);
 	work_mem = vmalloc(LZ4_MEM_COMPRESS);
 	decompressed_buf = vmalloc(BUF_SIZE);
 
@@ -57,10 +65,10 @@ static int __init init_lz4_test(void)
                                                 16, 1, buf, BUF_SIZE, true);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
-	ret = LZ4_compress_default(buf, compressed_buf, BUF_SIZE, OUT_BUF_SIZE, work_mem);
+	ret = LZ4_compress_default(buf, compressed_buf, BUF_SIZE, out_buf_max_size, work_mem);
 	out_len = ret;
 #else
-	ret = lz4_compress(buf, BUF_SIZE, compressed_buf, OUT_BUF_SIZE, &out_len, work_mem);
+	ret = lz4_compress(buf, BUF_SIZE, compressed_buf, out_buf_max_size, &out_len, work_mem);
 #endif
 	printk(KERN_INFO "TEST_LZ4: LZ4_compress returned %d\n", ret);
 	
