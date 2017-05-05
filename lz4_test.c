@@ -73,7 +73,11 @@ static int __init init_lz4_test(void)
 #endif
 	printk(KERN_INFO "TEST_LZ4: LZ4_compress returned %d\n", ret);
 	
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
 	if(ret == 0)
+#else
+	if(ret < 0)
+#endif
 		return 0;
 	compressed_len = out_len;
 	
