@@ -88,7 +88,7 @@ static int __init init_lz4_test(void)
 	ret = LZ4_decompress_fast(compressed_buf, decompressed_buf, compressed_len);
 	out_len = ret;
 #else
-	out_len = compressed_len;
+	compressed_len = out_len;
 	ret = lz4_decompress(compressed_buf, &compressed_len, decompressed_buf, BUF_SIZE);
 	out_len = compressed_len;
 #endif
