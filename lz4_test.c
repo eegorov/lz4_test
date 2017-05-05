@@ -61,7 +61,7 @@ static int __init init_lz4_test(void)
 	}
 
 	printk(KERN_INFO "TEST LZ4: Hello!\n");
-	print_hex_dump(KERN_INFO, "TEST LZ4 INBUF:", DUMP_PREFIX_NONE,
+	print_hex_dump(KERN_INFO, "TEST LZ4 INBUF: ", DUMP_PREFIX_NONE,
                                                 16, 1, buf, BUF_SIZE, true);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
@@ -81,20 +81,25 @@ static int __init init_lz4_test(void)
 		return 0;
 	compressed_len = out_len;
 	
-	print_hex_dump(KERN_INFO, "TEST LZ4 OUTBUF:", DUMP_PREFIX_NONE,
+	print_hex_dump(KERN_INFO, "TEST LZ4 OUTBUF: ", DUMP_PREFIX_NONE,
                                                 16, 1, compressed_buf, out_len, true);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
 	ret = LZ4_decompress_fast(compressed_buf, decompressed_buf, compressed_len);
 	out_len = ret;
 #else
-	ret = lz4_decompress_unknownoutputsize(compressed_buf, compressed_len, decompressed_buf, &out_len);
+	out_len = compressed_len;
+	ret = lz4_decompress(compressed_buf, &compressed_len, decompressed_buf, BUF_SIZE);
 #endif
         printk(KERN_INFO "TEST_LZ4: LZ4_decompress returned %d\n", ret);
 
-        if(ret > 0)
-		print_hex_dump(KERN_INFO, "TEST LZ4 OUTBUF:", DUMP_PREFIX_NONE,
-	                                        16, 1, decompressed_buf, ret, true);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
+	if(ret > 0)
+#else
+	if(ret == 0)
+#endif
+	print_hex_dump(KERN_INFO, "TEST LZ4 DECBUF: ", DUMP_PREFIX_NONE,
+                                           16, 1, decompressed_buf, BUF_SIZE, true);
 
 	return 0;
 }
