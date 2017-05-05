@@ -85,7 +85,8 @@ static int __init init_lz4_test(void)
                                                 16, 1, compressed_buf, out_len, true);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
-	ret = LZ4_decompress_fast(compressed_buf, decompressed_buf, compressed_len);
+	ret = LZ4_decompress_safe(compressed_buf, decompressed_buf, compressed_len, out_buf_max_size);
+//	ret = LZ4_decompress_fast(compressed_buf, decompressed_buf, BUF_SIZE);
 	out_len = ret;
 #else
 	out_len = out_buf_max_size;
