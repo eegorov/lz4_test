@@ -3,6 +3,7 @@
 #include <linux/vmalloc.h>
 #include <linux/lz4.h>
 
+#include <linux/version.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Egor Y. Egorov");
@@ -33,10 +34,11 @@ const char buf[BUF_SIZE] = "[General]\nlang=ru_RU\nDefault%20template=/var/tmp/G
 ;
 
 
-
 static int __init init_lz4_test(void)
 {
 	int ret;
+	size_t out_len;
+	size_t compressed_len;
 	char * compressed_buf = vmalloc(OUT_BUF_SIZE);
 	char * work_mem = vmalloc(LZ4_MEM_COMPRESS);
 	char * decompressed_buf = vmalloc(BUF_SIZE);
@@ -44,16 +46,28 @@ static int __init init_lz4_test(void)
 	printk(KERN_INFO "TEST LZ4: Hello!\n");
 	print_hex_dump(KERN_INFO, "TEST LZ4 INBUF:", DUMP_PREFIX_NONE,
                                                 16, 1, buf, BUF_SIZE, true);
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
 	ret = LZ4_compress_default(buf, compressed_buf, BUF_SIZE, OUT_BUF_SIZE, work_mem);
-	
+	out_len = ret;
+#else
+	ret = lz4_compress(buf, BUF_SIZE, compressed_buf, OUT_BUF_SIZE, &out_len, work_mem);
+#endif
 	printk(KERN_INFO "TEST_LZ4: LZ4_compress returned %d\n", ret);
 	
-	if(ret = 0)
+	if(ret == 0)
 		return 0;
+	compressed_len = out_len;
 	
 	print_hex_dump(KERN_INFO, "TEST LZ4 OUTBUF:", DUMP_PREFIX_NONE,
-                                                16, 1, compressed_buf, ret, true);
-	ret = LZ4_decompress_fast(compressed_buf, decompressed_buf, ret);
+                                                16, 1, compressed_buf, out_len, true);
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
+	ret = LZ4_decompress_fast(compressed_buf, decompressed_buf, compressed_len);
+	out_len = ret;
+#else
+	ret = lz4_decompress_unknownoutputsize(compressed_buf, compressed_len, decompressed_buf, &out_len);
+#endif
         printk(KERN_INFO "TEST_LZ4: LZ4_decompress returned %d\n", ret);
 
         if(ret > 0)
