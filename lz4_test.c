@@ -71,7 +71,7 @@ static int __init init_lz4_test(void)
 	out_len = out_buf_max_size;
 	ret = lz4_compress(buf, BUF_SIZE, compressed_buf, &out_len, work_mem);
 #endif
-	printk(KERN_INFO "TEST_LZ4: LZ4_compress returned %d\n", ret);
+	printk(KERN_INFO "TEST_LZ4: LZ4_compress returned %d, out_len = %lu\n", ret, out_len);
 	
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
 	if(ret == 0)
@@ -90,8 +90,9 @@ static int __init init_lz4_test(void)
 #else
 	out_len = compressed_len;
 	ret = lz4_decompress(compressed_buf, &compressed_len, decompressed_buf, BUF_SIZE);
+	out_len = compressed_len;
 #endif
-        printk(KERN_INFO "TEST_LZ4: LZ4_decompress returned %d\n", ret);
+        printk(KERN_INFO "TEST_LZ4: LZ4_decompress returned %d, out_len = %lu\n", ret, out_len);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
 	if(ret > 0)
